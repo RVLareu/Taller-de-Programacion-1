@@ -56,6 +56,119 @@ En Link Edicion, se resuelven las llamadas a funciones definidas por fuera de lo
 
 ![image](https://user-images.githubusercontent.com/71232328/155794264-2e33106f-514d-48ab-af69-67f4a388ab25.png)
 
+## Memoria en C/C++
+
+El tamaño que ocupa cada variable depende de la arquitectura y del compilador. Las variables se alinean con direcciones de meoria que son multiplos de 2, 4, etc. Por cuestiones de electronica es más facil para acceder. Por eso las ordena de esta manera el compilador. Desperdicia espacio (padding) Los punteros son las direcciones de memoria donde empieza algo (char, int, str, etc). Los punteros son variables enteras del mismo tamaño.
+Las cadenas de caracteres terminan con un bara cero o caracter nulo (byte 0). Las cadenas se guardan en memoria con el caracter ascii.
+
+![image](https://user-images.githubusercontent.com/71232328/155800920-fe91e108-a356-4768-8c64-71f43390e383.png)
+
+
+Estructuras de datos. Agrupan variables. De esta forma va a ocupar 16 bytes, pero todos estarán alineados
+
+![image](https://user-images.githubusercontent.com/71232328/155802169-91a3221a-221d-4d32-a6f1-dd9d8b02b0c7.png)
+
+
+Con el atributo especial de gcc __attribute__((packed)) el compilador empaqueta los campos sin padding, más eficiente en memoria pero más lento. Por ejemplo para leer s.c hay que hacer 2 lecturas
+
+![image](https://user-images.githubusercontent.com/71232328/155802295-94a5649b-557a-4c1a-8c97-c3324a965a7a.png)
+
+El endianess indica en que orden almacenaremos los bytes. Big endian: el mas significativo primero. El byte más significativo se lee/escribe primero (o esta primero en la memoria) en las arquitecturas big endian. Little endian pone en orden contrario, del menos significativo al más significativo.
+
+Esto no tiene importancia salvo cuando se interpreta ints como tira de charts (por ejemplo en las comunicaciones a través de sockets). Por esto es que siempre hay que especificar el endianess en que se guardan/envian archivos
+
+![image](https://user-images.githubusercontent.com/71232328/155802519-33df7dc5-0d10-4a39-ab9f-b2975d365054.png)
+
+Puede modificarse el endianess (el de la red es big endian). Para usar las funciones hay que hacer: #include <arpa/inet.h>.
+
+
+![image](https://user-images.githubusercontent.com/71232328/155802856-5dc7e7c7-beea-4fb5-a857-84d628e2eab6.png)
+
+
+#### Segmentos de memoria.
+
+En el code segment no se pueden modificar, se mantiene constante. 
+En el stack van las variables de retorno y direcciones de funciones.
+Si hacemos malloc, la memoria se reserva en el heap.
+
+![image](https://user-images.githubusercontent.com/71232328/155803038-74430106-626e-4171-87b7-add051ce3c7e.png)
+
+Variable Global, se pone en el data segment y el lifetime es de todo el programa.
+
+Si pongo varaible static, va al data segment y el lifetime es desde que se carga el programa hasta que termina.
+
+Si hablamos de una variable local en una funcion, se aloca en el stack. Se le asigna al momento de llamada de la funcion y cuando cierro llave, se libera. El lifetime es desde inicio hasta finalizacion de funcion.
+
+Scope habla de la accesibilidad. 
+
+![image](https://user-images.githubusercontent.com/71232328/155803459-d50870be-014a-4513-a695-e9eb92ccbb4f.png)
+
+
+Ejemplo. Static indica que solo se puede usar desde el mismo archivo (no desde afuera). Sin static es global. Static dentro de funcion indica que se debe conservar su valor entre llamados.
+
+char * c = "ABC". La cadena estará en el code segment por ser una constante, no la podré modificar
+ar[] es un arreglo de caracteres, por lo que estan en el stack. Por lo tanto lo puedo modificar. Si quiero hacer esto con char * c dará error.
+
+
+![image](https://user-images.githubusercontent.com/71232328/155803914-1ca50704-eaec-4d43-8540-836533051733.png)
+
+Como el puntero "a" apunta al Code Segment y este es de solo lectura, tratar de modificarlo termina en un Segmentation Fault
+
+![image](https://user-images.githubusercontent.com/71232328/155805022-b128413a-2f03-4198-9fc5-2eb5885df1d4.png)
+
+
+#### Punteros
 
 
 
+![image](https://user-images.githubusercontent.com/71232328/155805139-1a39cd78-7ea0-4685-b819-d28032e37ad0.png)
+
+
+Aritmetica de punteros. La notación de array (indexado) y la aritmética de punteros son escencialmente lo mismo. La aritmética de punteros se basa en el tamaño de los objetos a los que se apunta al igual que el indexado de un array.
+Al hacer p + 1 se incrementa en 1 * sizeof(int) entonces va al siguiente elemento del arreglo.
+
+
+
+![image](https://user-images.githubusercontent.com/71232328/155805426-6ffb7628-4d7d-493a-ae88-f07c9a53225f.png)
+
+
+Punteros a funciones. Para especificar el criterio de comparacion en quick sort la puedo pasar con el puntero a funcion.
+
+![image](https://user-images.githubusercontent.com/71232328/155805752-62c4c52d-4494-450a-b48c-4061570565d8.png)
+
+Como leer la notacion. Otra forma en el link: http://c-faq.com/decl/spiral.anderson.html
+
+![image](https://user-images.githubusercontent.com/71232328/155806479-2aff503b-4393-4eb8-bb35-b6e283efdfca.png)
+![image](https://user-images.githubusercontent.com/71232328/155806491-6c70e4a3-2b49-4362-8fdf-50f37b5bbf52.png)
+![image](https://user-images.githubusercontent.com/71232328/155806511-a7bad8e7-a7c9-4f73-aba6-66323f56aac6.png)
+
+Con el typedef le estoy indicando al compilador
+
+![image](https://user-images.githubusercontent.com/71232328/155806527-bb1799f4-7b73-424a-86ac-e7bb40c65340.png)
+
+#### Buffer overflows
+
+el primer argumento es el nombre del ejecutable, argc es la cantidad de argumentos, y argv es un arreglo de n punteros a char (argumentos pasados por linea de comandos).
+
+Define variable cookie, queda en el stack.
+Define arreglo de 10 char, tambien en el stack (ya lleva 14 bytes)
+%08x es en hexadecimal, simbolos hexadecimales en minuscula, en 8 caracteres padeados con cero. Si pongo algo mas grande que diez bytes, me va a pisar la memoria de cookie.
+
+![image](https://user-images.githubusercontent.com/71232328/155810097-c2f5c612-7b0a-4cd5-9776-34ad38818d8a.png)
+
+* Es claro que al inicializar cookie a cero nunca se va a imprimir "You win!"... o si?.
+* gets lee de la entrada estándar hasta encontrar un ’\n’ y lo que leea lo escribira en el buffer buf. Pero si el input es más grande que el buffer, gets escribira por fuera de este y sobreescribira todo el stack lo que se conoce como Buffer Overflow.
+* Para hacer que el programa entre al if e imprima "You win!" se debe forzar a un buffer overflow con un input crafteado:
+* Debe tener 10 bytes de mínima para ocupar el buffer buf.
+
+* Posiblemente deba tener algunos bytes adicionales para ocupar el posible espacio de padding usado para alinear las variables.
+* Luego se debe escribir los 4 bytes que sobreescribiran cookie pero cuidado, dependiendo de la arquitectura y flags del compilador sizeof(int) puede no ser 4.
+* Suponiendo que sean 4 bytes, hay que escribir el número 0x41424344 byte a byte y el orden dependera del endianess: "ABCD" en big endian, "DCBA" en little endian.
+
+![image](https://user-images.githubusercontent.com/71232328/155810692-00ab9f59-c7b8-4715-aed5-596afb41ebcb.png)
+
+getline es más segura, permite pasar un tamaño. Mas seguro que gets. en vez de strcpy, usar strncpy que permite pasar tamaño máximo
+
+El primer argumento del printf va al stack, entonces se puede pisar y que imprima you win, etc.
+
+![image](https://user-images.githubusercontent.com/71232328/155810879-9ea81763-8009-43b5-8a1c-0ce5768ca530.png)
