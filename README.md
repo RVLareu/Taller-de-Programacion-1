@@ -172,3 +172,41 @@ getline es más segura, permite pasar un tamaño. Mas seguro que gets. en vez de
 El primer argumento del printf va al stack, entonces se puede pisar y que imprima you win, etc.
 
 ![image](https://user-images.githubusercontent.com/71232328/155810879-9ea81763-8009-43b5-8a1c-0ce5768ca530.png)
+
+## Sockets TCP/IP en C
+
+Dado que el medio es compartido, cuando Alice envia un mensaje este se propaga por toda la red. El mensaje es recibido entonces por todos los participantes. Y a la vez evita que otros puedan comunicarse por que el medio esta en uso. Esto se conoce como half duplex.  Este tipo de redes requieren un hardware adicional mínimo o nulo lo que las hace particularmente baratas y fáciles de mantener. Son para redes locales, como una red Wifi.
+
+![image](https://user-images.githubusercontent.com/71232328/155849448-fcc31e22-2647-4d51-b5e1-2b29af631b92.png)
+
+Ahora la red esta segmentada: los mensajes son enviados de un segmento a otro a traves de los routers.
+Los routers usan las direcciones IP de destino para saber a donde enviar los mensajes. La red esta governada por el protocolo IP. Existen actualmente 2 versiones IPv4 e IPv6. El primero usa direcciones de máquina (host) de 4 bytes y el segundo de 16. IP no garantiza que lleguen todos los paquetes, ni el orden ni que no haya duplicados. Es un protocolo pensado para simplificar el hardware de la red, no para hacerle más fácil la vida a los desarrolladores.
+
+El orden de los mensajes no se garantiza en esta red. Otro error podria ser que los mensajes o paquetes lleguen duplicados. Pueden perderse tambien. IPv4 usa direcciones de 4 bytes. IPv6 usa direcciones de 6 bytes.
+
+![image](https://user-images.githubusercontent.com/71232328/155849482-c0c263e6-4371-4bff-8e7c-bb08f45096b2.png)
+
+IP solo nos habla de los hosts, no de los programas que corren en ellos. TCP permite direccionar a cada programa o servicio a traves de un número, el puerto. TCP es orientado a la conexión: hay un participante pasivo que espera una comunicación y hay otro que la inicia de forma activa. Típicamente el participante pasivo es el servidor y el activo el cliente. Una vez establecida la conexión los bytes enviados (full duplex) no se pierden, desordenan ni duplican. TCP no garantiza nada sobre los mensajes, solo sabe de bytes, por lo que un mensaje puede llegar incompleto.
+
+
+El protocolo TCP está sobre la red IP. Se envian bytes. El protocolo TCP garantiza el orden y que los bytes no se pierdan (los reenvia si se pierden en la red). TCP no tiene mensajes, envía tira bytes.
+
+Short read, es leer de menos. Cada máquina, ademas de tener una direccion tiene varios puertos que son programas escuchando. Podemos hablar con la misma máquina pero para servicios distintos porque hay varios programas escuchando en distintos puertos.
+
+![image](https://user-images.githubusercontent.com/71232328/155849687-2414e853-eb4c-42a9-ac4e-87c340a36618.png)
+
+Resuelve los nombres de dominio. Para enviar un mensaje por ej a Bob.com, le envia al servidor dnd "Bob.com" y el servidor le devuelve la direccion ip. El dns nos permite preguntarle a un servidor el ip de una direccion/nombre. Un dominio puede tener varias ips.
+
+
+![image](https://user-images.githubusercontent.com/71232328/155850334-40c75a3c-9806-487d-a0f1-533307d8cb87.png)
+
+
+## Resolucion de nombres (TODO ESTO ESTA BIEN CLARO EN EL HANDOUT DEL DIPA SOCKETS)
+
+El servidor tiene que definir desde donde quiere recibir las conexiones. Hay más esquemas posibles pero solo nos interesa definir la IP y el puerto del servidor. Sin embargo, hardcodear la IP y/o el puerto es una mala práctica. Mejor es usar nombres simbólicos: host name y service name. La función getaddrinfo se encargara de resolver esos nombres y llevarlos a IPs y puertos.
+
+![image](https://user-images.githubusercontent.com/71232328/155850536-ec802010-2bfc-4ba0-b779-4914bc67a32e.png)
+
+
+
+
